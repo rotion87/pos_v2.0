@@ -16,7 +16,7 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="dos.css">
 
-  <!-- 彈出視窗＆感謝視窗樣式＋放大結帳框 -->
+  <!-- 彈出視窗＆感謝視窗樣式＋放大結帳框＋密碼視窗 -->
   <style>
   #thanks-modal{
     position:fixed; inset:0; display:none; place-items:center;
@@ -87,6 +87,68 @@
     font-weight:bold;
   }
 
+  /* ===== 設定密碼 DOS 視窗 ===== */
+  #pw-modal{
+    position:fixed;
+    inset:0;
+    display:none;
+    place-items:center;
+    background:rgba(0,0,0,.7);
+    z-index:10000;
+  }
+  #pw-modal.show{
+    display:grid;
+  }
+  .pw-box{
+    background:var(--panel2);
+    border:3px solid var(--border);
+    box-shadow: inset 0 0 8px #000a, 0 6px 18px rgba(0,0,0,.5);
+    padding:14px;
+    width:min(420px, 96vw);
+    animation:pop .16s ease-out;
+  }
+  .pw-inner{
+    border:2px solid var(--border2);
+    background:var(--panel);
+    padding:16px 18px;
+    color:var(--text);
+    font-family:'LanaPixel','Press Start 2P','Noto Sans TC',monospace;
+    font-size:18px;
+    line-height:1.6;
+  }
+  .pw-title{
+    font-size:20px;
+    margin-bottom:8px;
+  }
+  .pw-input-row{
+    margin:10px 0;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  #pw-input{
+    flex:1;
+    background:#000030;
+    border:1px solid var(--border);
+    color:var(--white);
+    border-radius:4px;
+    padding:6px 8px;
+    font-family:'LanaPixel','Noto Sans TC',monospace;
+    font-size:18px;
+  }
+  #pw-error{
+    margin-top:4px;
+    min-height:1.2em;
+    font-size:14px;
+    color:#ff5a5a;
+  }
+  .pw-actions{
+    margin-top:14px;
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+  }
+
   @keyframes pop{ from{ transform:scale(.92); opacity:.6 } to{ transform:scale(1); opacity:1 } }
   </style>
 </head>
@@ -102,7 +164,7 @@
     <div id="clock">--:--:--</div>
     <div id="today-stats">今日銷售：0 筆／NT$ 0</div>
 
-    <!-- 🔐 設定按鈕（含密碼） -->
+    <!-- 設定按鈕（改成會叫出 DOS 密碼視窗） -->
     <button id="btn-settings" style="margin-left:8px">設定</button>
 
     <button id="btn-history" style="margin-left:8px">歷史</button>
@@ -173,7 +235,7 @@
       </div>
     </section>
 
-    <!-- 設定頁（密碼門檻後才進得來） -->
+    <!-- 設定頁（密碼通過後才進） -->
     <section id="page-settings" class="page">
       <div class="sum-bar vga">系統設定</div>
 
@@ -225,7 +287,6 @@
       </div>
     </section>
   </div>
-
   <!-- 結帳結果視窗：只有 收款 / 合計 / 找回 -->
   <div id="result" class="result hidden">
     <div class="result-box dos-frame bigbox">
@@ -261,9 +322,31 @@
     </div>
   </div>
 
+  <!-- 設定密碼 DOS 視窗 -->
+  <div id="pw-modal" role="dialog" aria-modal="true">
+    <div class="pw-box">
+      <div class="pw-inner">
+        <div class="pw-title">系統設定・權限驗證</div>
+        <div>請輸入管理密碼才能進入「設定」畫面。</div>
+
+        <div class="pw-input-row">
+          <span>密碼：</span>
+          <input id="pw-input" type="password" inputmode="numeric" maxlength="8" autocomplete="off">
+        </div>
+
+        <div id="pw-error"></div>
+
+        <div class="pw-actions">
+          <button id="pw-cancel">取消</button>
+          <button id="pw-ok" class="primary">確認</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="toast" class="toast"></div>
 
-  <!-- Script（下一段） -->
+  <!-- Script -->
   <script>
   // ====== 基本設定：店名／商品／感謝畫面 ======
   const SETTINGS_PASSWORD = '5487'; // 🔐 設定密碼
@@ -361,6 +444,41 @@
   async function toggleFullscreen(){
     if (isFullscreen()) await exitFullscreen();
     else await requestFullscreen();
+  }
+
+  // ====== 密碼視窗控制 ======
+  function showPwModal(){
+    const m = el('#pw-modal');
+    const input = el('#pw-input');
+    const err = el('#pw-error');
+    if(!m) return;
+    err.textContent = '';
+    input.value = '';
+    m.classList.add('show');
+    setTimeout(()=> input.focus(), 10);
+  }
+
+  function hidePwModal(){
+    const m = el('#pw-modal');
+    if(!m) return;
+    m.classList.remove('show');
+  }
+
+  function handlePwSubmit(){
+    const input = el('#pw-input');
+    const err = el('#pw-error');
+    const v = (input.value || '').trim();
+    if(v === SETTINGS_PASSWORD){
+      hidePwModal();
+      openSettings();
+    }else{
+      err.textContent = '叫你們老闆出來';
+    }
+  }
+
+  function isPwModalOpen(){
+    const m = el('#pw-modal');
+    return m && m.classList.contains('show');
   }
 
   // ----- 列表渲染與選取狀態 -----
@@ -493,7 +611,7 @@
   }
 
   // ====== 歷史紀錄（日別篩選＋分組） ======
-  let historyFilterDate = null; // 'YYYY-MM-DD' 或 null
+  let historyFilterDate = null;
 
   function fmtTime(ts){
     try{
@@ -897,6 +1015,21 @@
   let firstUserInteractionDone = false;
 
   document.addEventListener('keydown', async (e)=>{
+    // 密碼視窗開啟時，優先處理 Enter / Esc
+    if (isPwModalOpen()) {
+      if (e.key === 'Enter' || e.code === 'NumpadEnter') {
+        e.preventDefault();
+        handlePwSubmit();
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        hidePwModal();
+        return;
+      }
+      return; // 其他鍵讓 input 自己處理
+    }
+
     if (!(e.key === 'Enter' || e.code === 'NumpadEnter')) {
       playAudioById('#key');
     }
@@ -1148,18 +1281,29 @@
       returnHome();
     });
 
-    // 🔐 設定頁（加上密碼保護）
+    // 🔐 設定頁（DOS 風格密碼視窗）
     el('#btn-settings').addEventListener('click', () => {
-      const input = prompt('請輸入管理密碼：');
-      if (input === null) return; // 取消
-
-      if (input === SETTINGS_PASSWORD) {
-        openSettings();
-      } else {
-        alert('叫你們老闆出來');
-      }
+      showPwModal();
     });
 
+    el('#pw-ok').addEventListener('click', () => {
+      handlePwSubmit();
+    });
+    el('#pw-cancel').addEventListener('click', () => {
+      hidePwModal();
+    });
+
+    const pwInput = el('#pw-input');
+    if (pwInput) {
+      pwInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.code === 'NumpadEnter') {
+          e.preventDefault();
+          handlePwSubmit();
+        }
+      });
+    }
+
+    // 儲存設定
     el('#btn-settings-cancel').addEventListener('click', ()=> gotoPage('#page-products'));
 
     el('#btn-settings-save').addEventListener('click', ()=>{

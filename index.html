@@ -16,7 +16,7 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="dos.css">
 
-  <!-- 彈出視窗＆感謝視窗樣式＋放大結帳框＋密碼視窗 -->
+  <!-- 彈出視窗＆感謝視窗樣式＋放大結帳框＋密碼視窗＋footer -->
   <style>
   #thanks-modal{
     position:fixed; inset:0; display:none; place-items:center;
@@ -149,6 +149,21 @@
     gap:8px;
   }
 
+  /* 底部固定版權列（黑底 DOS 風格） */
+  #footer-bar{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    padding:4px 8px 6px;
+    background:var(--panel2);
+    border-top:1px solid var(--border2);
+    font-size:14px;
+    text-align:center;
+    color:var(--text);
+    z-index:8000;
+  }
+
   @keyframes pop{ from{ transform:scale(.92); opacity:.6 } to{ transform:scale(1); opacity:1 } }
   </style>
 </head>
@@ -164,7 +179,7 @@
     <div id="clock">--:--:--</div>
     <div id="today-stats">今日銷售：0 筆／NT$ 0</div>
 
-    <!-- 設定按鈕（改成會叫出 DOS 密碼視窗） -->
+    <!-- 設定按鈕（叫出 DOS 密碼視窗） -->
     <button id="btn-settings" style="margin-left:8px">設定</button>
 
     <button id="btn-history" style="margin-left:8px">歷史</button>
@@ -344,6 +359,11 @@
     </div>
   </div>
 
+  <!-- 底部版權列 -->
+  <div id="footer-bar" class="vga">
+    Copyright © 2025 孤芳小隊 GOODFUN TEAM ｜Make it fun, get it good.
+  </div>
+
   <div id="toast" class="toast"></div>
 
   <!-- Script -->
@@ -439,7 +459,7 @@
   }
   function exitFullscreen(){
     if (document.exitFullscreen) return document.exitFullscreen();
-    if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+    if (de.webkitExitFullscreen) return document.webkitExitFullscreen();
   }
   async function toggleFullscreen(){
     if (isFullscreen()) await exitFullscreen();

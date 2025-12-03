@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-  <title>孤芳小隊 GOODFUN TEAM ・開源收銀系統</title>
+  <title>孤芳小隊 GOODFUN TEAM・開源收銀系統</title>
   <meta name="theme-color" content="#001080">
 
   <!-- Google Fonts -->
@@ -184,6 +184,7 @@
 
     <button id="btn-history" style="margin-left:8px">歷史</button>
     <button id="btn-fs" style="margin-left:8px">全螢幕</button>
+    <button id="btn-contact" style="margin-left:8px">聯絡我們</button>
   </div>
 
   <div id="app" class="wrap">
@@ -379,17 +380,17 @@
 
   // 預設商品清單
   const DEFAULT_PRODUCTS = [
-    {name:'商品名稱',                 price:999},
-    {name:'商品名稱',                 price:999},
-    {name:'商品名稱',                 price:999},
-    {name:'商品名稱',                 price:999},
-    {name:'商品名稱',                 price:999},
-    {name:'商品名稱',                 price:999},
-    {name:'商品名稱',                 price:999},
-    {name:'商品名稱',                 price:999},
-    {name:'商品名稱',                 price:999},
-    {name:'商品名稱',                 price:999},
-    {name:'商品名稱',                 price:999},
+    {name:'《孤芳小隊全體成員》',         price:900},
+    {name:'《祝各位老闆老闆娘》',         price:999},
+    {name:'《生意興隆結帳結不完》',       price:999},
+    {name:'《如對於收銀系統》',           price:999},
+    {name:'《有任何建議或指導》',         price:999},
+    {name:'《歡迎至IG聯絡我們》',         price:999},
+    {name:'《各式合作交流》',             price:999},
+    {name:'《也非常歡迎》',               price:999},
+    {name:'《一起讓這個世界》',           price:999},
+    {name:'《變得越來越好玩》',           price:999},
+    {name:'《make it FUN, get it GOOD》', price:999},
   ];
 
   function loadStoreName(){
@@ -459,7 +460,7 @@
   }
   function exitFullscreen(){
     if (document.exitFullscreen) return document.exitFullscreen();
-    if (de.webkitExitFullscreen) return document.webkitExitFullscreen();
+    if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
   }
   async function toggleFullscreen(){
     if (isFullscreen()) await exitFullscreen();
@@ -1293,6 +1294,11 @@
     // 全螢幕按鈕
     el('#btn-fs').addEventListener('click', async ()=>{
       try{ await toggleFullscreen(); }catch(_){}
+    });
+
+    // 聯絡我們（開 IG）
+    el('#btn-contact').addEventListener('click', ()=>{
+      window.open('https://www.instagram.com/goodfun.team/', '_blank');
     });
 
     // 感謝視窗關閉
